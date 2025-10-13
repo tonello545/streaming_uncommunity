@@ -53,29 +53,30 @@ const VixSrcPlayer = ({ config, width = '100%', height = '500px' }) => {
   }, [config, width, height]);
 
   return (
-    <div style={{ marginBottom: '20px' }}>
+    <div style={{ width: '100%' }}>
       <div
         ref={containerRef}
         style={{
-          width,
+          width: '100%',
           height,
           backgroundColor: '#000',
-          borderRadius: '8px',
+          borderRadius: '4px',
           overflow: 'hidden'
         }}
       />
       {events.length > 0 && (
         <div style={{
-          marginTop: '10px',
-          padding: '10px',
-          backgroundColor: '#f0f0f0',
-          borderRadius: '5px',
-          maxHeight: '150px',
-          overflowY: 'auto'
+          marginTop: '15px',
+          padding: '12px',
+          backgroundColor: '#2d2d2d',
+          borderRadius: '4px',
+          maxHeight: '120px',
+          overflowY: 'auto',
+          borderLeft: '4px solid #E50914'
         }}>
-          <strong>Eventi:</strong>
+          <strong style={{ color: '#ffffff', fontSize: '14px' }}>Eventi:</strong>
           {events.map((event, index) => (
-            <div key={index} style={{ fontSize: '12px', marginTop: '5px' }}>
+            <div key={index} style={{ fontSize: '12px', marginTop: '5px', color: '#b3b3b3' }}>
               {event}
             </div>
           ))}

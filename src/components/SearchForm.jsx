@@ -73,17 +73,18 @@ const SearchForm = ({ onSelectContent }) => {
 
   return (
     <div style={{
-      backgroundColor: 'white',
+      backgroundColor: '#181818',
       padding: '20px',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      borderRadius: '4px',
       marginBottom: '20px'
     }}>
       <h2 style={{
-        color: '#555',
-        borderBottom: '2px solid #B20710',
+        color: '#ffffff',
+        borderBottom: '3px solid #E50914',
         paddingBottom: '10px',
-        marginTop: 0
+        marginTop: 0,
+        fontSize: '1.5rem',
+        fontWeight: '600'
       }}>
         🔍 {t('search.title')}
       </h2>
@@ -103,10 +104,12 @@ const SearchForm = ({ onSelectContent }) => {
             style={{
               flex: '1',
               minWidth: '200px',
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '5px',
-              fontSize: '14px'
+              padding: '12px',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: '#333333',
+              color: '#ffffff'
             }}
           />
 
@@ -114,11 +117,12 @@ const SearchForm = ({ onSelectContent }) => {
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
             style={{
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '5px',
+              padding: '12px',
+              border: 'none',
+              borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: 'white',
+              backgroundColor: '#333333',
+              color: '#ffffff',
               cursor: 'pointer'
             }}
           >
@@ -130,14 +134,14 @@ const SearchForm = ({ onSelectContent }) => {
             type="submit"
             disabled={isLoading}
             style={{
-              backgroundColor: isLoading ? '#999' : '#B20710',
+              backgroundColor: isLoading ? '#564d4d' : '#E50914',
               color: 'white',
               border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
+              padding: '12px 24px',
+              borderRadius: '4px',
               cursor: isLoading ? 'not-allowed' : 'pointer',
               fontSize: '14px',
-              fontWeight: 'bold'
+              fontWeight: '600'
             }}
           >
             {isLoading ? t('search.searching') : t('search.button')}
@@ -147,12 +151,12 @@ const SearchForm = ({ onSelectContent }) => {
 
       {error && (
         <div style={{
-          backgroundColor: '#fff3cd',
-          padding: '10px',
-          borderRadius: '5px',
+          backgroundColor: '#2d2d2d',
+          padding: '12px',
+          borderRadius: '4px',
           marginBottom: '15px',
-          borderLeft: '4px solid #ffc107',
-          color: '#856404'
+          borderLeft: '4px solid #E50914',
+          color: '#ffffff'
         }}>
           {error}
         </div>
@@ -160,7 +164,7 @@ const SearchForm = ({ onSelectContent }) => {
 
       {searchResults.length > 0 && (
         <div>
-          <h3 style={{ color: '#555', marginBottom: '10px' }}>
+          <h3 style={{ color: '#ffffff', marginBottom: '15px', marginTop: '20px', fontSize: '1.2rem' }}>
             {t('search.results')} ({searchResults.length})
           </h3>
           <div style={{

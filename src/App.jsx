@@ -41,44 +41,65 @@ const App = () => {
 
   return (
     <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '20px',
-      fontFamily: 'Arial, sans-serif'
+      minHeight: '100vh',
+      backgroundColor: '#141414',
+      padding: '20px'
     }}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>
-        {t('app.title')}
-      </h1>
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto'
+      }}>
+        <h1 style={{
+          textAlign: 'center',
+          color: '#E50914',
+          fontSize: '2.5rem',
+          fontWeight: '700',
+          marginBottom: '20px',
+          textTransform: 'uppercase',
+          letterSpacing: '2px'
+        }}>
+          {t('app.title')}
+        </h1>
 
-      <LanguageSelector />
+        <LanguageSelector />
 
       {/* Search Section */}
       <SearchForm onSelectContent={handleSelectContent} />
 
       {/* Film Section */}
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: '#181818',
         padding: '20px',
         marginBottom: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        borderRadius: '4px'
       }}>
-        <h2 style={{ color: '#555', borderBottom: '2px solid #B20710', paddingBottom: '10px' }}>
+        <h2 style={{
+          color: '#ffffff',
+          borderBottom: '3px solid #E50914',
+          paddingBottom: '10px',
+          fontSize: '1.5rem',
+          fontWeight: '600'
+        }}>
           🎬 {t('player.movie.title')}
         </h2>
 
-        <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '15px', marginTop: '15px' }}>
           <button
             onClick={() => setShowMovie(!showMovie)}
             style={{
-              backgroundColor: '#B20710',
+              backgroundColor: '#E50914',
               color: 'white',
               border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
+              padding: '12px 24px',
+              borderRadius: '4px',
               cursor: 'pointer',
-              marginRight: '10px'
+              marginRight: '10px',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'background-color 0.2s'
             }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#f40612'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#E50914'}
           >
             {showMovie ? t('player.movie.hide') : t('player.movie.show')}
           </button>
@@ -86,45 +107,60 @@ const App = () => {
           <button
             onClick={() => setMovieConfig({ ...movieConfig, tmdbId: 550 })}
             style={{
-              backgroundColor: '#28a745',
-              color: 'white',
+              backgroundColor: '#ffffff',
+              color: '#000000',
               border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              cursor: 'pointer'
+              padding: '12px 24px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'background-color 0.2s'
             }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e5e5'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
           >
             {t('buttons.loadFightClub')}
           </button>
         </div>
 
-        {showMovie && <VixSrcPlayer config={movieConfig} height="500px" />}
+        {showMovie && <VixSrcPlayer config={movieConfig} height="600px" />}
       </div>
 
       {/* TV Series Section */}
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: '#181818',
         padding: '20px',
         marginBottom: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        borderRadius: '4px'
       }}>
-        <h2 style={{ color: '#555', borderBottom: '2px solid #B20710', paddingBottom: '10px' }}>
+        <h2 style={{
+          color: '#ffffff',
+          borderBottom: '3px solid #E50914',
+          paddingBottom: '10px',
+          fontSize: '1.5rem',
+          fontWeight: '600'
+        }}>
           📺 {t('player.tv.title')}
         </h2>
 
-        <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '15px', marginTop: '15px' }}>
           <button
             onClick={() => setShowTv(!showTv)}
             style={{
-              backgroundColor: '#B20710',
+              backgroundColor: '#E50914',
               color: 'white',
               border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
+              padding: '12px 24px',
+              borderRadius: '4px',
               cursor: 'pointer',
-              marginRight: '10px'
+              marginRight: '10px',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'background-color 0.2s'
             }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#f40612'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#E50914'}
           >
             {showTv ? t('player.tv.hide') : t('player.tv.show')}
           </button>
@@ -132,19 +168,25 @@ const App = () => {
           <button
             onClick={() => setTvConfig({ ...tvConfig, tmdbId: 1396, season: 1, episode: 1 })}
             style={{
-              backgroundColor: '#28a745',
-              color: 'white',
+              backgroundColor: '#ffffff',
+              color: '#000000',
               border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              cursor: 'pointer'
+              padding: '12px 24px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'background-color 0.2s'
             }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e5e5'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
           >
             {t('buttons.loadBreakingBad')}
           </button>
         </div>
 
-        {showTv && <VixSrcPlayer config={tvConfig} height="500px" />}
+        {showTv && <VixSrcPlayer config={tvConfig} height="600px" />}
+      </div>
       </div>
     </div>
   );

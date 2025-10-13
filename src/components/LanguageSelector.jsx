@@ -7,16 +7,17 @@ const LanguageSelector = () => {
     <div style={{
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: '10px',
-      padding: '10px',
-      backgroundColor: 'white',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      padding: '15px',
+      backgroundColor: '#181818',
+      borderRadius: '4px',
       marginBottom: '20px'
     }}>
       <label style={{
-        fontWeight: 'bold',
-        color: '#555'
+        fontWeight: '600',
+        color: '#ffffff',
+        fontSize: '14px'
       }}>
         🌐 {t('language.label')}:
       </label>
@@ -24,13 +25,15 @@ const LanguageSelector = () => {
         value={language}
         onChange={(e) => changeLanguage(e.target.value)}
         style={{
-          padding: '8px 12px',
-          border: '1px solid #ddd',
-          borderRadius: '5px',
+          padding: '10px 16px',
+          border: 'none',
+          borderRadius: '4px',
           fontSize: '14px',
-          backgroundColor: 'white',
+          backgroundColor: '#333333',
+          color: '#ffffff',
           cursor: 'pointer',
-          outline: 'none'
+          outline: 'none',
+          fontWeight: '500'
         }}
       >
         <option value="it">{t('language.it')}</option>
