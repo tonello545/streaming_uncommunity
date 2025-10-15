@@ -4,7 +4,7 @@ export const it = {
   },
   search: {
     title: "Cerca Contenuti",
-    placeholder: "Cerca film o serie TV...",
+    placeholder: "Digita per cercare film o serie TV...",
     button: "Cerca",
     searching: "Ricerca...",
     noResults: "Nessun risultato trovato",

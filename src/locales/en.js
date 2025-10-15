@@ -4,7 +4,7 @@ export const en = {
   },
   search: {
     title: "Search Content",
-    placeholder: "Search movies or TV shows...",
+    placeholder: "Type to search movies or TV shows...",
     button: "Search",
     searching: "Searching...",
     noResults: "No results found",

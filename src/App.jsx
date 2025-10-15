@@ -6,37 +6,47 @@ import { useTranslation } from './contexts/LanguageContext';
 
 const App = () => {
   const { t } = useTranslation();
-  const [movieConfig, setMovieConfig] = useState({
-    tmdbId: 786892, // Furiosa
+  const [currentConfig, setCurrentConfig] = useState({
+    tmdbId: 786892, // Furiosa (default: movie)
     primaryColor: 'B20710',
     secondaryColor: '170000',
     autoplay: false,
     lang: 'it'
   });
 
-  const [tvConfig, setTvConfig] = useState({
-    tmdbId: 1399, // Game of Thrones
-    season: 1,
-    episode: 1,
-    primaryColor: 'B20710',
-    secondaryColor: '170000',
-    autoplay: false,
-    lang: 'it'
-  });
-
-  const [showMovie, setShowMovie] = useState(true);
-  const [showTv, setShowTv] = useState(true);
+  const [contentType, setContentType] = useState('movie');
+  const [showPlayer, setShowPlayer] = useState(true);
 
   const handleSelectContent = (config, type) => {
-    if (type === 'movie') {
-      setMovieConfig(config);
-      setShowMovie(true);
-      setShowTv(false);
-    } else if (type === 'tv') {
-      setTvConfig(config);
-      setShowTv(true);
-      setShowMovie(false);
-    }
+    setCurrentConfig(config);
+    setContentType(type);
+    setShowPlayer(true);
+  };
+
+  const loadMovie = (tmdbId) => {
+    setCurrentConfig({
+      tmdbId,
+      primaryColor: 'B20710',
+      secondaryColor: '170000',
+      autoplay: false,
+      lang: currentConfig.lang || 'it'
+    });
+    setContentType('movie');
+    setShowPlayer(true);
+  };
+
+  const loadTvShow = (tmdbId, season = 1, episode = 1) => {
+    setCurrentConfig({
+      tmdbId,
+      season,
+      episode,
+      primaryColor: 'B20710',
+      secondaryColor: '170000',
+      autoplay: false,
+      lang: currentConfig.lang || 'it'
+    });
+    setContentType('tv');
+    setShowPlayer(true);
   };
 
   return (
@@ -66,7 +76,7 @@ const App = () => {
       {/* Search Section */}
       <SearchForm onSelectContent={handleSelectContent} />
 
-      {/* Film Section */}
+      {/* Unified Player Section */}
       <div style={{
         backgroundColor: '#181818',
         padding: '20px',
@@ -80,12 +90,12 @@ const App = () => {
           fontSize: '1.5rem',
           fontWeight: '600'
         }}>
-          🎬 {t('player.movie.title')}
+          {contentType === 'movie' ? '🎬 ' + t('player.movie.title') : '📺 ' + t('player.tv.title')}
         </h2>
 
-        <div style={{ marginBottom: '15px', marginTop: '15px' }}>
+        <div style={{ marginBottom: '15px', marginTop: '15px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           <button
-            onClick={() => setShowMovie(!showMovie)}
+            onClick={() => setShowPlayer(!showPlayer)}
             style={{
               backgroundColor: '#E50914',
               color: 'white',
@@ -93,7 +103,6 @@ const App = () => {
               padding: '12px 24px',
               borderRadius: '4px',
               cursor: 'pointer',
-              marginRight: '10px',
               fontSize: '14px',
               fontWeight: '600',
               transition: 'background-color 0.2s'
@@ -101,11 +110,11 @@ const App = () => {
             onMouseEnter={(e) => e.target.style.backgroundColor = '#f40612'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#E50914'}
           >
-            {showMovie ? t('player.movie.hide') : t('player.movie.show')}
+            {showPlayer ? (contentType === 'movie' ? t('player.movie.hide') : t('player.tv.hide')) : (contentType === 'movie' ? t('player.movie.show') : t('player.tv.show'))}
           </button>
 
           <button
-            onClick={() => setMovieConfig({ ...movieConfig, tmdbId: 550 })}
+            onClick={() => loadMovie(550)}
             style={{
               backgroundColor: '#ffffff',
               color: '#000000',
@@ -122,51 +131,9 @@ const App = () => {
           >
             {t('buttons.loadFightClub')}
           </button>
-        </div>
-
-        {showMovie && <VixSrcPlayer config={movieConfig} height="600px" />}
-      </div>
-
-      {/* TV Series Section */}
-      <div style={{
-        backgroundColor: '#181818',
-        padding: '20px',
-        marginBottom: '20px',
-        borderRadius: '4px'
-      }}>
-        <h2 style={{
-          color: '#ffffff',
-          borderBottom: '3px solid #E50914',
-          paddingBottom: '10px',
-          fontSize: '1.5rem',
-          fontWeight: '600'
-        }}>
-          📺 {t('player.tv.title')}
-        </h2>
-
-        <div style={{ marginBottom: '15px', marginTop: '15px' }}>
-          <button
-            onClick={() => setShowTv(!showTv)}
-            style={{
-              backgroundColor: '#E50914',
-              color: 'white',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginRight: '10px',
-              fontSize: '14px',
-              fontWeight: '600',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#f40612'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#E50914'}
-          >
-            {showTv ? t('player.tv.hide') : t('player.tv.show')}
-          </button>
 
           <button
-            onClick={() => setTvConfig({ ...tvConfig, tmdbId: 1396, season: 1, episode: 1 })}
+            onClick={() => loadTvShow(1396, 1, 1)}
             style={{
               backgroundColor: '#ffffff',
               color: '#000000',
@@ -185,7 +152,7 @@ const App = () => {
           </button>
         </div>
 
-        {showTv && <VixSrcPlayer config={tvConfig} height="600px" />}
+        {showPlayer && <VixSrcPlayer config={currentConfig} height="600px" />}
       </div>
       </div>
     </div>

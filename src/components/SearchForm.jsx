@@ -1,34 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '../contexts/LanguageContext';
 
 const SearchForm = ({ onSelectContent }) => {
   const { t, language } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchType, setSearchType] = useState('movie');
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const debounceTimerRef = useRef(null);
 
   // TMDB API Key
   const TMDB_API_KEY = '29c7e7dd5d0745880dd92f2a2adf6fb3';
   const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-
-    if (!searchQuery.trim()) {
-      setError(t('search.enterQuery'));
+  const performSearch = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setError(null);
       return;
     }
 
     setIsLoading(true);
     setError(null);
-    setSearchResults([]);
 
     try {
-      // Usa TMDB API per la ricerca con la lingua corrente
+      // Usa TMDB multi-search per cercare sia film che serie TV
       const tmdbLang = language === 'it' ? 'it-IT' : 'en-US';
-      const url = `${TMDB_BASE_URL}/search/${searchType}?api_key=${TMDB_API_KEY}&language=${tmdbLang}&query=${encodeURIComponent(searchQuery)}&page=1`;
+      const url = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&language=${tmdbLang}&query=${encodeURIComponent(query)}&page=1`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -39,7 +37,15 @@ const SearchForm = ({ onSelectContent }) => {
       console.log('Risultati ricerca TMDB:', data);
 
       if (data && data.results && data.results.length > 0) {
-        setSearchResults(data.results);
+        // Filtra solo film e serie TV (esclude persone)
+        const filteredResults = data.results.filter(item =>
+          item.media_type === 'movie' || item.media_type === 'tv'
+        );
+        setSearchResults(filteredResults);
+
+        if (filteredResults.length === 0) {
+          setError(t('search.noResults'));
+        }
       } else {
         setError(t('search.noResults'));
       }
@@ -48,6 +54,43 @@ const SearchForm = ({ onSelectContent }) => {
       setError(`${t('search.error')}: ${err.message}`);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Ricerca predittiva con debounce
+  useEffect(() => {
+    // Pulisci il timer precedente
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Se la query è vuota, resetta i risultati
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Imposta un nuovo timer per la ricerca dopo 500ms
+    debounceTimerRef.current = setTimeout(() => {
+      performSearch(searchQuery);
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, language]);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    // La ricerca è già gestita dal useEffect, ma manteniamo il form per l'accessibilità
+    if (searchQuery.trim()) {
+      performSearch(searchQuery);
     }
   };
 
@@ -60,13 +103,16 @@ const SearchForm = ({ onSelectContent }) => {
       lang: 'it'
     };
 
+    // Rileva automaticamente il tipo dal media_type di TMDB
+    const contentType = item.media_type === 'tv' ? 'tv' : 'movie';
+
     // Per le serie TV, aggiungi season e episode
-    if (searchType === 'tv') {
+    if (contentType === 'tv') {
       config.season = 1;
       config.episode = 1;
     }
 
-    onSelectContent(config, searchType);
+    onSelectContent(config, contentType);
     setSearchResults([]);
     setSearchQuery('');
   };
@@ -112,23 +158,6 @@ const SearchForm = ({ onSelectContent }) => {
               color: '#ffffff'
             }}
           />
-
-          <select
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-            style={{
-              padding: '12px',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: '#333333',
-              color: '#ffffff',
-              cursor: 'pointer'
-            }}
-          >
-            <option value="movie">{t('content.movie')}</option>
-            <option value="tv">{t('content.tv')}</option>
-          </select>
 
           <button
             type="submit"
@@ -219,7 +248,7 @@ const SearchForm = ({ onSelectContent }) => {
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap'
                 }}>
-                  {item.title || item.name}
+                  {item.media_type === 'tv' ? '📺 ' : '🎬 '}{item.title || item.name}
                 </h4>
                 <p style={{
                   margin: '5px 0',
