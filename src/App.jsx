@@ -2,10 +2,14 @@ import { useState } from 'react';
 import VixSrcPlayer from './components/VixSrcPlayer';
 import SearchForm from './components/SearchForm';
 import LanguageSelector from './components/LanguageSelector';
+import WatchHistory from './components/WatchHistory';
+import Auth from './components/Auth';
 import { useTranslation } from './contexts/LanguageContext';
+import { useAuth } from './contexts/AuthContext';
 
 const App = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [currentConfig, setCurrentConfig] = useState({
     tmdbId: 786892, // Furiosa (default: movie)
     primaryColor: 'B20710',
@@ -16,14 +20,21 @@ const App = () => {
 
   const [contentType, setContentType] = useState('movie');
   const [showPlayer, setShowPlayer] = useState(true);
+  const [contentMetadata, setContentMetadata] = useState({
+    title: 'Furiosa: A Mad Max Saga',
+    posterUrl: 'https://image.tmdb.org/t/p/w500/iADOJ8Zymht2JPMoy3R7xceZprc.jpg'
+  });
 
-  const handleSelectContent = (config, type) => {
+  const handleSelectContent = (config, type, metadata = null) => {
     setCurrentConfig(config);
     setContentType(type);
     setShowPlayer(true);
+    if (metadata) {
+      setContentMetadata(metadata);
+    }
   };
 
-  const loadMovie = (tmdbId) => {
+  const loadMovie = (tmdbId, title = 'Movie', posterUrl = null) => {
     setCurrentConfig({
       tmdbId,
       primaryColor: 'B20710',
@@ -32,10 +43,11 @@ const App = () => {
       lang: currentConfig.lang || 'it'
     });
     setContentType('movie');
+    setContentMetadata({ title, posterUrl });
     setShowPlayer(true);
   };
 
-  const loadTvShow = (tmdbId, season = 1, episode = 1) => {
+  const loadTvShow = (tmdbId, season = 1, episode = 1, title = 'TV Show', posterUrl = null) => {
     setCurrentConfig({
       tmdbId,
       season,
@@ -46,6 +58,30 @@ const App = () => {
       lang: currentConfig.lang || 'it'
     });
     setContentType('tv');
+    setContentMetadata({ title, posterUrl });
+    setShowPlayer(true);
+  };
+
+  const handleResumeContent = (item) => {
+    const config = {
+      tmdbId: item.tmdbId,
+      primaryColor: 'B20710',
+      secondaryColor: '170000',
+      autoplay: false,
+      lang: currentConfig.lang || 'it'
+    };
+
+    if (item.contentType === 'tv') {
+      config.season = item.season;
+      config.episode = item.episode;
+    }
+
+    setCurrentConfig(config);
+    setContentType(item.contentType);
+    setContentMetadata({
+      title: item.title,
+      posterUrl: item.posterUrl
+    });
     setShowPlayer(true);
   };
 
@@ -73,25 +109,32 @@ const App = () => {
 
         <LanguageSelector />
 
-      {/* Search Section */}
-      <SearchForm onSelectContent={handleSelectContent} />
+      {/* Authentication Section */}
+      <Auth />
 
-      {/* Unified Player Section */}
-      <div style={{
-        backgroundColor: '#181818',
-        padding: '20px',
-        marginBottom: '20px',
-        borderRadius: '4px'
-      }}>
-        <h2 style={{
-          color: '#ffffff',
-          borderBottom: '3px solid #E50914',
-          paddingBottom: '10px',
-          fontSize: '1.5rem',
-          fontWeight: '600'
+      {/* Watch History Section - Solo se autenticato */}
+      {isAuthenticated && <WatchHistory onResumeContent={handleResumeContent} />}
+
+      {/* Search Section - Solo se autenticato */}
+      {isAuthenticated && <SearchForm onSelectContent={handleSelectContent} />}
+
+      {/* Unified Player Section - Solo se autenticato */}
+      {isAuthenticated && (
+        <div style={{
+          backgroundColor: '#181818',
+          padding: '20px',
+          marginBottom: '20px',
+          borderRadius: '4px'
         }}>
-          {contentType === 'movie' ? '🎬 ' + t('player.movie.title') : '📺 ' + t('player.tv.title')}
-        </h2>
+          <h2 style={{
+            color: '#ffffff',
+            borderBottom: '3px solid #E50914',
+            paddingBottom: '10px',
+            fontSize: '1.5rem',
+            fontWeight: '600'
+          }}>
+            {contentType === 'movie' ? '🎬 ' + t('player.movie.title') : '📺 ' + t('player.tv.title')}
+          </h2>
 
         <div style={{ marginBottom: '15px', marginTop: '15px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           <button
@@ -114,7 +157,7 @@ const App = () => {
           </button>
 
           <button
-            onClick={() => loadMovie(550)}
+            onClick={() => loadMovie(550, 'Fight Club', 'https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg')}
             style={{
               backgroundColor: '#ffffff',
               color: '#000000',
@@ -133,7 +176,7 @@ const App = () => {
           </button>
 
           <button
-            onClick={() => loadTvShow(1396, 1, 1)}
+            onClick={() => loadTvShow(1396, 1, 1, 'Breaking Bad', 'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg')}
             style={{
               backgroundColor: '#ffffff',
               color: '#000000',
@@ -152,8 +195,9 @@ const App = () => {
           </button>
         </div>
 
-        {showPlayer && <VixSrcPlayer config={currentConfig} height="600px" />}
-      </div>
+          {showPlayer && <VixSrcPlayer config={currentConfig} height="600px" contentMetadata={contentMetadata} />}
+        </div>
+      )}
       </div>
     </div>
   );

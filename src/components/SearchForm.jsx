@@ -112,7 +112,13 @@ const SearchForm = ({ onSelectContent }) => {
       config.episode = 1;
     }
 
-    onSelectContent(config, contentType);
+    // Crea i metadati del contenuto
+    const metadata = {
+      title: item.title || item.name,
+      posterUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null
+    };
+
+    onSelectContent(config, contentType, metadata);
     setSearchResults([]);
     setSearchQuery('');
   };

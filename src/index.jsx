@@ -2,12 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 ReactDOM.render(
   <React.StrictMode>
-    <LanguageProvider>
-      <App />
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
+    </AuthProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

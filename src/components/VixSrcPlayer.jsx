@@ -1,12 +1,82 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { VixSrcClient } from '../VixSrcClient';
+import { saveWatchProgressFirebase, getContentProgressFirebase } from '../services/firebaseWatchHistory';
 
-const VixSrcPlayer = ({ config, width = '100%', height = '500px' }) => {
+const VixSrcPlayer = ({ config, width = '100%', height = '500px', contentMetadata = null, onProgressUpdate = null }) => {
   const containerRef = useRef(null);
   const clientRef = useRef(null);
   const [events, setEvents] = useState([]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const progressSaveIntervalRef = useRef(null);
+  const lastSavedTimeRef = useRef(0);
+
+  // Funzione per salvare il progresso corrente
+  const saveCurrentProgress = async () => {
+    if (!contentMetadata || !config) {
+      console.warn('⚠️ Impossibile salvare: mancano contentMetadata o config');
+      return;
+    }
+
+    if (currentTime === 0 || !duration) {
+      console.warn('⚠️ Impossibile salvare: currentTime o duration non validi', { currentTime, duration });
+      return;
+    }
+
+    const progressData = {
+      tmdbId: config.tmdbId,
+      title: contentMetadata.title || 'Unknown',
+      contentType: config.season !== undefined ? 'tv' : 'movie',
+      currentTime: currentTime,
+      duration: duration,
+      posterUrl: contentMetadata.posterUrl || null,
+      ...(config.season !== undefined && {
+        season: config.season,
+        episode: config.episode
+      })
+    };
+
+    console.log('💾 Tentativo salvataggio progresso:', {
+      title: progressData.title,
+      currentTime: Math.floor(progressData.currentTime),
+      duration: Math.floor(progressData.duration),
+      percentage: Math.floor((progressData.currentTime / progressData.duration) * 100) + '%'
+    });
+
+    const success = await saveWatchProgressFirebase(progressData);
+
+    if (success) {
+      console.log('✅ Progresso salvato con successo!');
+      lastSavedTimeRef.current = currentTime;
+    } else {
+      console.error('❌ Errore nel salvataggio del progresso');
+    }
+
+    if (onProgressUpdate) {
+      onProgressUpdate(progressData);
+    }
+  };
 
   useEffect(() => {
+    // Avvia il tracciamento del progresso (salva ogni 10 secondi)
+    const startProgressTracking = () => {
+      if (progressSaveIntervalRef.current) return;
+
+      progressSaveIntervalRef.current = setInterval(() => {
+        // Salva solo se il tempo è cambiato di almeno 5 secondi
+        if (Math.abs(currentTime - lastSavedTimeRef.current) >= 5) {
+          saveCurrentProgress();
+        }
+      }, 10000); // 10 secondi
+    };
+
+    // Ferma il tracciamento del progresso
+    const stopProgressTracking = () => {
+      if (progressSaveIntervalRef.current) {
+        clearInterval(progressSaveIntervalRef.current);
+        progressSaveIntervalRef.current = null;
+      }
+    };
     // Inizializza il client solo una volta
     if (!clientRef.current) {
       clientRef.current = new VixSrcClient();
@@ -16,16 +86,38 @@ const VixSrcPlayer = ({ config, width = '100%', height = '500px' }) => {
       clientRef.current.addEventListener('play', (event) => {
         console.log('Video started playing:', event.data);
         setEvents(prev => [...prev, `▶️ Play - ${new Date().toLocaleTimeString()}`]);
+        startProgressTracking();
       });
 
       clientRef.current.addEventListener('pause', (event) => {
         console.log('Video paused:', event.data);
         setEvents(prev => [...prev, `⏸️ Pause - ${new Date().toLocaleTimeString()}`]);
+        saveCurrentProgress();
+        stopProgressTracking();
       });
 
       clientRef.current.addEventListener('ended', (event) => {
         console.log('Video ended:', event.data);
         setEvents(prev => [...prev, `🏁 Ended - ${new Date().toLocaleTimeString()}`]);
+        saveCurrentProgress();
+        stopProgressTracking();
+      });
+
+      // Evento per tracciare il tempo corrente
+      clientRef.current.addEventListener('timeupdate', (event) => {
+        if (event.data && event.data.currentTime !== undefined) {
+          setCurrentTime(event.data.currentTime);
+          if (event.data.duration !== undefined) {
+            setDuration(event.data.duration);
+          }
+        }
+      });
+
+      // Evento per tracciare la durata
+      clientRef.current.addEventListener('loadedmetadata', (event) => {
+        if (event.data && event.data.duration !== undefined) {
+          setDuration(event.data.duration);
+        }
       });
     }
 
@@ -43,14 +135,61 @@ const VixSrcPlayer = ({ config, width = '100%', height = '500px' }) => {
       }
     }
 
+    // Polling manuale del tempo (fallback se gli eventi non funzionano)
+    const pollingInterval = setInterval(() => {
+      if (clientRef.current && clientRef.current.player) {
+        try {
+          const playerElement = clientRef.current.player;
+          const ct = playerElement.currentTime || 0;
+          const dur = playerElement.duration || 0;
+
+          if (ct > 0 && !isNaN(ct)) {
+            setCurrentTime(ct);
+            if (dur > 0 && !isNaN(dur)) {
+              setDuration(dur);
+            }
+            console.log('⏱️ Polling time:', Math.floor(ct), 's / Duration:', Math.floor(dur), 's');
+          }
+        } catch (err) {
+          // Ignora errori se il player non è pronto
+        }
+      }
+    }, 5000); // Controlla ogni 5 secondi
+
     // Cleanup
     return () => {
+      clearInterval(pollingInterval);
+      stopProgressTracking();
       if (clientRef.current) {
         // Non distruggiamo il client completamente per permettere riutilizzo
         // clientRef.current.destroy();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, width, height]);
+
+  // Effetto per recuperare il progresso salvato al caricamento
+  useEffect(() => {
+    const loadSavedProgress = async () => {
+      if (config && contentMetadata) {
+        const contentType = config.season !== undefined ? 'tv' : 'movie';
+        const savedProgress = await getContentProgressFirebase(
+          config.tmdbId,
+          contentType,
+          config.season,
+          config.episode
+        );
+
+        if (savedProgress && savedProgress.currentTime > 10) {
+          // Se c'è un progresso salvato significativo, mostra un messaggio
+          console.log(`Progresso recuperato: ${savedProgress.currentTime}s`);
+          setEvents(prev => [...prev, `📌 Progresso recuperato: ${Math.floor(savedProgress.currentTime)}s`]);
+        }
+      }
+    };
+
+    loadSavedProgress();
+  }, [config, contentMetadata]);
 
   return (
     <div style={{ width: '100%' }}>
