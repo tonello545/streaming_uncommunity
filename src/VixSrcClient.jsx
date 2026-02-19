@@ -110,8 +110,12 @@ export class VixSrcClient {
     try {
       const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
+      // Log tutti i messaggi ricevuti per debug
+      console.log('📨 Messaggio ricevuto da VixSrc:', data);
+
       // Il formato secondo la documentazione è: { type: "PLAYER_EVENT", data: { event: "play", ... } }
       if (data.type === 'PLAYER_EVENT' && data.data && data.data.event) {
+        console.log('🎬 Evento player:', data.data.event, data.data);
         this.emitEvent(data.data.event, data.data);
       }
     } catch (error) {

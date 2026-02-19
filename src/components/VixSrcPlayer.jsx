@@ -105,18 +105,22 @@ const VixSrcPlayer = ({ config, width = '100%', height = '500px', contentMetadat
 
       // Evento per tracciare il tempo corrente
       clientRef.current.addEventListener('timeupdate', (event) => {
+        console.log('📡 Evento timeupdate ricevuto:', event.data);
         if (event.data && event.data.currentTime !== undefined) {
           setCurrentTime(event.data.currentTime);
           if (event.data.duration !== undefined) {
             setDuration(event.data.duration);
           }
+          console.log('⏱️ Tempo aggiornato:', Math.floor(event.data.currentTime), 's /', event.data.duration ? Math.floor(event.data.duration) + 's' : 'N/A');
         }
       });
 
       // Evento per tracciare la durata
       clientRef.current.addEventListener('loadedmetadata', (event) => {
+        console.log('📡 Evento loadedmetadata ricevuto:', event.data);
         if (event.data && event.data.duration !== undefined) {
           setDuration(event.data.duration);
+          console.log('⏱️ Durata video:', Math.floor(event.data.duration), 's');
         }
       });
     }
@@ -135,30 +139,11 @@ const VixSrcPlayer = ({ config, width = '100%', height = '500px', contentMetadat
       }
     }
 
-    // Polling manuale del tempo (fallback se gli eventi non funzionano)
-    const pollingInterval = setInterval(() => {
-      if (clientRef.current && clientRef.current.player) {
-        try {
-          const playerElement = clientRef.current.player;
-          const ct = playerElement.currentTime || 0;
-          const dur = playerElement.duration || 0;
-
-          if (ct > 0 && !isNaN(ct)) {
-            setCurrentTime(ct);
-            if (dur > 0 && !isNaN(dur)) {
-              setDuration(dur);
-            }
-            console.log('⏱️ Polling time:', Math.floor(ct), 's / Duration:', Math.floor(dur), 's');
-          }
-        } catch (err) {
-          // Ignora errori se il player non è pronto
-        }
-      }
-    }, 5000); // Controlla ogni 5 secondi
+    // Log per debug: verifica che gli event listener siano attivi
+    console.log('🎧 Event listeners registrati. In attesa di eventi dal player...');
 
     // Cleanup
     return () => {
-      clearInterval(pollingInterval);
       stopProgressTracking();
       if (clientRef.current) {
         // Non distruggiamo il client completamente per permettere riutilizzo

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '../contexts/LanguageContext';
+import EpisodeSelector from './EpisodeSelector';
 
 const SearchForm = ({ onSelectContent }) => {
   const { t, language } = useTranslation();
@@ -8,6 +9,8 @@ const SearchForm = ({ onSelectContent }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const debounceTimerRef = useRef(null);
+  const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
+  const [selectedTvShow, setSelectedTvShow] = useState(null);
 
   // TMDB API Key
   const TMDB_API_KEY = '29c7e7dd5d0745880dd92f2a2adf6fb3';
@@ -95,32 +98,60 @@ const SearchForm = ({ onSelectContent }) => {
   };
 
   const handleSelectContent = (item) => {
+    // Rileva automaticamente il tipo dal media_type di TMDB
+    const contentType = item.media_type === 'tv' ? 'tv' : 'movie';
+
+    if (contentType === 'tv') {
+      // Per le serie TV, mostra il selettore di episodi
+      setSelectedTvShow(item);
+      setShowEpisodeSelector(true);
+    } else {
+      // Per i film, carica direttamente
+      const config = {
+        tmdbId: item.id,
+        primaryColor: 'B20710',
+        secondaryColor: '170000',
+        autoplay: false,
+        lang: 'it'
+      };
+
+      const metadata = {
+        title: item.title || item.name,
+        posterUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null
+      };
+
+      onSelectContent(config, contentType, metadata);
+      setSearchResults([]);
+      setSearchQuery('');
+    }
+  };
+
+  const handleEpisodeConfirm = (season, episode) => {
     const config = {
-      tmdbId: item.id,
+      tmdbId: selectedTvShow.id,
+      season,
+      episode,
       primaryColor: 'B20710',
       secondaryColor: '170000',
       autoplay: false,
       lang: 'it'
     };
 
-    // Rileva automaticamente il tipo dal media_type di TMDB
-    const contentType = item.media_type === 'tv' ? 'tv' : 'movie';
-
-    // Per le serie TV, aggiungi season e episode
-    if (contentType === 'tv') {
-      config.season = 1;
-      config.episode = 1;
-    }
-
-    // Crea i metadati del contenuto
     const metadata = {
-      title: item.title || item.name,
-      posterUrl: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null
+      title: selectedTvShow.title || selectedTvShow.name,
+      posterUrl: selectedTvShow.poster_path ? `https://image.tmdb.org/t/p/w500${selectedTvShow.poster_path}` : null
     };
 
-    onSelectContent(config, contentType, metadata);
+    onSelectContent(config, 'tv', metadata);
+    setShowEpisodeSelector(false);
+    setSelectedTvShow(null);
     setSearchResults([]);
     setSearchQuery('');
+  };
+
+  const handleEpisodeCancel = () => {
+    setShowEpisodeSelector(false);
+    setSelectedTvShow(null);
   };
 
   return (
@@ -280,6 +311,16 @@ const SearchForm = ({ onSelectContent }) => {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Episode Selector Modal */}
+      {showEpisodeSelector && selectedTvShow && (
+        <EpisodeSelector
+          tvShowId={selectedTvShow.id}
+          tvShowData={selectedTvShow}
+          onConfirm={handleEpisodeConfirm}
+          onCancel={handleEpisodeCancel}
+        />
       )}
     </div>
   );

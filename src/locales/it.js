@@ -74,5 +74,22 @@ export const it = {
     invalidEmail: "Email non valida",
     invalidCredentials: "Email o password non corretti",
     weakPassword: "La password è troppo debole"
+  },
+  newReleases: {
+    title: "Nuove Uscite",
+    movies: "Film",
+    tvShows: "Serie TV",
+    loading: "Caricamento..."
+  },
+  episodeSelector: {
+    loading: "Caricamento informazioni serie TV",
+    selectEpisode: "Seleziona la stagione e l'episodio che desideri guardare",
+    season: "Stagione",
+    episode: "Episodio",
+    episodes: "episodi",
+    noDescription: "Nessuna descrizione disponibile",
+    airDate: "Data di uscita",
+    confirm: "Conferma",
+    cancel: "Annulla"
   }
 };

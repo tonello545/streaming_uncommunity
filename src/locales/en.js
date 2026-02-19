@@ -74,5 +74,22 @@ export const en = {
     invalidEmail: "Invalid email",
     invalidCredentials: "Invalid email or password",
     weakPassword: "Password is too weak"
+  },
+  newReleases: {
+    title: "New Releases",
+    movies: "Movies",
+    tvShows: "TV Shows",
+    loading: "Loading..."
+  },
+  episodeSelector: {
+    loading: "Loading TV show information",
+    selectEpisode: "Select the season and episode you want to watch",
+    season: "Season",
+    episode: "Episode",
+    episodes: "episodes",
+    noDescription: "No description available",
+    airDate: "Air date",
+    confirm: "Confirm",
+    cancel: "Cancel"
   }
 };
