@@ -25,6 +25,11 @@ const App = () => {
     }
   };
 
+  const handleNextEpisode = (season, episode) => {
+    setCurrentConfig(prev => ({ ...prev, season, episode }));
+    setContentType('tv');
+  };
+
   const handleResumeContent = (item) => {
     const config = {
       tmdbId: item.tmdbId,
@@ -122,7 +127,12 @@ const App = () => {
             </h2>
 
             {showPlayer && currentConfig && (
-              <VixSrcPlayer config={currentConfig} height="600px" contentMetadata={contentMetadata} />
+              <VixSrcPlayer
+                config={currentConfig}
+                height="600px"
+                contentMetadata={contentMetadata}
+                onNextEpisode={contentType === 'tv' ? handleNextEpisode : null}
+              />
             )}
           </div>
         )}

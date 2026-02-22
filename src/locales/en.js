@@ -22,7 +22,8 @@ export const en = {
       title: "TV Series Player",
       show: "Show TV Series",
       hide: "Hide TV Series"
-    }
+    },
+    nextEpisode: "Next episode"
   },
   content: {
     movie: "Movie",

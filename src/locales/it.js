@@ -22,7 +22,8 @@ export const it = {
       title: "Serie TV Player",
       show: "Mostra Serie TV",
       hide: "Nascondi Serie TV"
-    }
+    },
+    nextEpisode: "Episodio successivo"
   },
   content: {
     movie: "Film",
